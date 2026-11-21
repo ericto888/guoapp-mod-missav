@@ -212,6 +212,8 @@ function extractCards(html, base) {
       image = COVER_HOST + "/" + id.toLowerCase() + "/cover-t.jpg";
     } else if (image.indexOf("//") === 0) {
       image = "https:" + image;
+    } else if ((image.indexOf("http://") !== 0 && image.indexOf("https://") !== 0)) {
+      image = resolveUrl(base, image);
     }
 
     let title = (chunk.match(/<div class="my-2[^"]*">\s*<a[^>]*>([\s\S]*?)<\/a>/i) || [])[1] || "";
@@ -270,7 +272,8 @@ function detailData(html, item, pageUrl) {
   if (code) meta.push("番号 " + code);
   if (date) meta.push("发行 " + clean(date));
   const description = decodeHTML((html.match(/og:description"\s+content="([^"]*)"/i) || [])[1] || "");
-  const cover = image ? (image.indexOf("//") === 0 ? "https:" + image : image) :
+  const cover = image ? (image.indexOf("//") === 0 ? "https:" + image :
+    ((image.indexOf("http://") === 0 || image.indexOf("https://") === 0) ? image : resolveUrl(originOf(pageUrl), image))) :
     COVER_HOST + "/" + item.sourceId.toLowerCase() + "/cover-n.jpg";
   return {
     drama: {
@@ -283,7 +286,10 @@ function detailData(html, item, pageUrl) {
       intro: description,
       cover: cover,
       totalEpisode: 1,
-      releaseStatus: "已发布"
+      releaseStatus: "已发布",
+      actors: actors,
+      tags: Array.from(new Set(tags)).slice(0, 24),
+      author: maker
     },
     chapters: [{
       id: host.chapterId(item.sourceId, "video"),
