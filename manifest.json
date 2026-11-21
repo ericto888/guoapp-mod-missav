@@ -1,8 +1,8 @@
 {
   "id": "missav",
   "name": "MissAV",
-  "version": "1.0.0",
-  "description": "MissAV 成人长视频站源，支持多镜像探测、中文分类、搜索、详情和 HLS 画质解析。",
+  "version": "1.0.1",
+  "description": "MissAV 成人长视频站源，支持多镜像自动探测、中文分类、搜索、详情与 HLS 画质解析。",
   "runtime": "js",
   "api": 1,
   "adult": true,

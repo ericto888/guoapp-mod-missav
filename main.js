@@ -174,6 +174,11 @@ function getPage(path, referer) {
   }
 }
 
+function originOf(url) {
+  const match = String(url || "").match(/^(https?:\/\/[^/]+)/i);
+  return match ? match[1] : MIRRORS[0];
+}
+
 function pagePath(path, page) {
   const number = Math.max(1, Number(page || 1) || 1);
   if (number <= 1) return path;
@@ -242,7 +247,7 @@ function toDrama(item) {
 }
 
 function parseField(html, labels) {
-  const pattern = new RegExp("<span>(?:" + labels + "):</span>([\\\\s\\\\S]*?)</div>", "i");
+  const pattern = new RegExp("<span>(?:" + labels + "):</span>([\\s\\S]*?)</div>", "i");
   const match = String(html || "").match(pattern);
   return match ? match[1] : "";
 }
@@ -464,7 +469,7 @@ module.exports = {
     if (!this.validCategory(category)) throw new Error("MissAV 没有分类：" + category);
     const selected = category ? CATEGORY_MAP[category] : CATEGORY_MAP["new"];
     const result = getPage(pagePath(selected.path, page), "");
-    const cards = extractCards(result.body, result.url.replace(/\/[^/]*$/, ""));
+    const cards = extractCards(result.body, originOf(result.url));
     const items = cards.map(toDrama);
     const next = Number(page || 1) + 1;
     const hasMore = items.length > 0 &&
@@ -476,7 +481,7 @@ module.exports = {
     const keyword = str(query);
     if (!keyword) return { items: [], hasMore: false };
     const result = getPage(pagePath("/cn/search/" + encodeURIComponent(keyword), page), "");
-    const cards = extractCards(result.body, result.url.replace(/\/[^/]*$/, ""));
+    const cards = extractCards(result.body, originOf(result.url));
     return { items: cards.map(toDrama), hasMore: cards.length > 0 && result.body.indexOf("page=" + (Number(page || 1) + 1)) >= 0 };
   },
 
@@ -497,7 +502,7 @@ module.exports = {
     const result = getPage(path, savedPage || "");
     const uuid = videoUUID(result.body);
     if (!uuid) throw new Error("MissAV 页面没有找到视频 UUID，播放器脚本结构可能已变化");
-    const media = probeStreams(uuid, result.url.replace(/\/[^/]*$/, ""));
+    const media = probeStreams(uuid, originOf(result.url));
     return host.finishMedia(media);
   }
 };
